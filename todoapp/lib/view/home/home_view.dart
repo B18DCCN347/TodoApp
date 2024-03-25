@@ -62,7 +62,7 @@ class _HomeViewState extends State<HomeView> {
 
     tasks.forEach(
       (task) {
-        if (task.createdAtDate.day == (DateTime.now().day - 1)) {
+        if ((DateTime.now().day == (task.createdAtDate.day - 1))) {
           alertExpiredTime(context);
         } else {}
       },
