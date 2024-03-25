@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:todoapp/presentations/home/home_screen.dart';
+import 'package:todoapp/data/hive_data_store.dart';
+import 'package:todoapp/models/task.dart';
+import 'package:todoapp/models/timeofday.dart';
+import 'package:todoapp/utils/constanst.dart';
+import 'package:todoapp/view/home/home_view.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -9,19 +13,22 @@ void main() async {
   await Hive.initFlutter();
 
   /// Register Hive Adapter
-  // Hive.registerAdapter<Task>(TaskAdapter());
+  Hive
+    ..registerAdapter<TimeOfDay>(TimeOfDayAdapter())
+    ..registerAdapter<Task>(TaskAdapter());
+  // ..registerAdapter<StatusTask>(StatusTaskAdapter());
 
-  // /// Open box
-  // var box = await Hive.openBox<Task>("tasksBox");
+  /// Open box
+  var box = await Hive.openBox<Task>("tasksBox");
 
-  // /// Delete data from previous day
-  // // ignore: avoid_function_literals_in_foreach_calls
-  // box.values.forEach((task) {
-  //   if (task.createdAtTime.day != DateTime.now().day) {
-  //     task.delete();
-  //   } else {}
-  // });
-  runApp(const MyApp());
+  /// Delete data from previous day
+  // ignore: avoid_function_literals_in_foreach_calls
+  box.values.forEach((task) {
+    if (task.createdAtDate.day == (DateTime.now().day - 1)) {
+    } else {}
+  });
+
+  runApp(BaseWidget(child: const MyApp()));
 }
 
 class MyApp extends StatelessWidget {
@@ -31,6 +38,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: ThemeData(
         textTheme: const TextTheme(
@@ -72,7 +80,27 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      home: const HomeScreen(),
+      home: const HomeView(),
     );
+  }
+}
+
+class BaseWidget extends InheritedWidget {
+  BaseWidget({Key? key, required this.child}) : super(key: key, child: child);
+  final HiveDataStore dataStore = HiveDataStore();
+  final Widget child;
+
+  static BaseWidget of(BuildContext context) {
+    final base = context.dependOnInheritedWidgetOfExactType<BaseWidget>();
+    if (base != null) {
+      return base;
+    } else {
+      throw StateError('Could not find ancestor widget of type BaseWidget');
+    }
+  }
+
+  @override
+  bool updateShouldNotify(covariant InheritedWidget oldWidget) {
+    return false;
   }
 }
